@@ -38,7 +38,7 @@ const Index = () => {
       const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer sk-d86202fc45e54cb598656e972542e21e",
+          "Authorization": `Bearer ${import.meta.env.VITE_ARTWHISPERER_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
