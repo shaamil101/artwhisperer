@@ -45,7 +45,7 @@ const Index = () => {
           model: "openai.gpt-4o-2024-08-06",
           messages: [{
             role: "user",
-            content: userMessage
+            content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
           }],
           temperature: 0.7,
           max_tokens: 1000
