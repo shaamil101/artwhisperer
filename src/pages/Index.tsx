@@ -43,23 +43,37 @@ const Index = () => {
         },
         body: JSON.stringify({
           model: "openai.gpt-4o-2024-08-06",
-          messages: [{ role: "user", content: userMessage }],
+          messages: [{
+            role: "user",
+            content: userMessage
+          }],
+          temperature: 0.7,
+          max_tokens: 1000
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("API Error Response:", errorData);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
 
       const data = await response.json();
-      const aiMessage = data.choices[0].message.content;
+      console.log("API Response:", data);
 
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error("Invalid response format from API");
+      }
+
+      const aiMessage = data.choices[0].message.content;
       setMessages((prev) => [...prev, { role: "assistant", content: aiMessage }]);
     } catch (error) {
+      console.error("Detailed error:", error);
       toast({
         title: "Error",
-        description: "Failed to get response from the AI. Please try again.",
+        description: `Failed to get response: ${error.message}`,
         variant: "destructive",
       });
-      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
