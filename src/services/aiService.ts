@@ -7,43 +7,64 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const getAIResponse = async (userMessage: string) => {
-  const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer sk-d86202fc45e54cb598656e972542e21e",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "openai.gpt-4o-2024-08-06",
-      messages: [{
-        role: "user",
-        content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
-      }],
-      temperature: 0.7,
-      max_tokens: 1000
-    }),
-  });
+  try {
+    const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer sk-d86202fc45e54cb598656e972542e21e",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai.gpt-4o-2024-08-06",
+        messages: [{
+          role: "user",
+          content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
+        }],
+        temperature: 0.7,
+        max_tokens: 1000
+      }),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    console.error("API Error Response:", errorData);
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("API Response:", data);
+
+    if (!data.choices?.[0]?.message?.content) {
+      console.error("Invalid API response format:", data);
+      throw new Error("Invalid response format from API");
+    }
+
+    // Save user message to Supabase
+    await saveMessage("user", userMessage);
+    
+    // Save AI response to Supabase
+    const aiResponseContent = data.choices[0].message.content;
+    await saveMessage("assistant", aiResponseContent);
+
+    return aiResponseContent;
+  } catch (error) {
+    console.error("Error in getAIResponse:", error);
+    throw error;
   }
-
-  const data = await response.json();
-  console.log("API Response:", data);
-
-  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-    throw new Error("Invalid response format from API");
-  }
-
-  return data.choices[0].message.content;
 };
 
 export const saveMessage = async (role: "user" | "assistant", content: string) => {
-  const { error } = await supabase
-    .from('conversations')
-    .insert([{ role, content }]);
+  try {
+    const { error } = await supabase
+      .from('conversations')
+      .insert([{ role, content }]);
 
-  if (error) throw error;
+    if (error) {
+      console.error("Error saving message to Supabase:", error);
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error in saveMessage:", error);
+    throw error;
+  }
 };
