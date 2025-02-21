@@ -11,17 +11,22 @@ export const getAIResponse = async (userMessage: string) => {
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "sk-d15355a8cc7b48cc9449a900c9834f00",
+        "Authorization": "bearer sk-d15355a8cc7b48cc9449a900c9834f00",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google_genai.gemini-2.0-flash-001",
-        messages: [{
-          role: "user",
-          content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
-        }],
-        temperature: 0.7,
-        max_tokens: 1000
+        model: "anthropic.claude-3-5-haiku-20241022",
+        messages: [
+          {
+            role: "system",
+            content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concise and imagine that you're already at the MET with the user so you don't need to mention it."
+          },
+          {
+            role: "user",
+            content: userMessage
+          }
+        ],
+        stream: false
       }),
     });
 
