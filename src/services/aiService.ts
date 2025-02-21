@@ -1,10 +1,10 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+const supabaseUrl = "https://rnzucysbinhnwyozduel.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuenVjeXNiaW5obnd5b3pkdWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNzQxNjIsImV4cCI6MjA1NTc1MDE2Mn0.qBfilqDAdpRInNm84elhp9Z-TvBDHhJejsD1CkRxtIw";
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const getAIResponse = async (userMessage: string) => {
   const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
