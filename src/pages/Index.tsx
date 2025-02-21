@@ -3,57 +3,17 @@ import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { createClient } from '@supabase/supabase-js';
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
-// Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { useMessages } from "@/hooks/useMessages";
+import { getAIResponse, saveMessage } from "@/services/aiService";
+import { ChatMessage } from "@/components/ChatMessage";
+import { Message } from "@/types/message";
 
 const Index = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  // Load conversations from Supabase when component mounts
-  useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('conversations')
-          .select('*')
-          .order('created_at', { ascending: true });
-
-        if (error) throw error;
-
-        if (data) {
-          const formattedMessages = data.map(msg => ({
-            role: msg.role as "user" | "assistant",
-            content: msg.content
-          }));
-          setMessages(formattedMessages);
-        }
-      } catch (error) {
-        console.error("Error loading messages:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load conversations",
-          variant: "destructive",
-        });
-      }
-    };
-
-    loadMessages();
-  }, []);
+  const { messages, setMessages } = useMessages();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,60 +30,15 @@ const Index = () => {
     const userMessage = input.trim();
     setInput("");
     
-    // Add user message to UI immediately with explicit typing
     const newUserMessage: Message = { role: "user", content: userMessage };
     setMessages(prev => [...prev, newUserMessage]);
     setIsLoading(true);
 
     try {
-      // Save user message to Supabase
-      const { error: insertError } = await supabase
-        .from('conversations')
-        .insert([{ role: "user", content: userMessage }]);
+      await saveMessage("user", userMessage);
+      const aiMessage = await getAIResponse(userMessage);
+      await saveMessage("assistant", aiMessage);
 
-      if (insertError) throw insertError;
-
-      // Get AI response
-      const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer sk-d86202fc45e54cb598656e972542e21e",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai.gpt-4o-2024-08-06",
-          messages: [{
-            role: "user",
-            content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
-          }],
-          temperature: 0.7,
-          max_tokens: 1000
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error("API Error Response:", errorData);
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error("Invalid response format from API");
-      }
-
-      const aiMessage = data.choices[0].message.content;
-      
-      // Save AI message to Supabase
-      const { error: aiInsertError } = await supabase
-        .from('conversations')
-        .insert([{ role: "assistant", content: aiMessage }]);
-
-      if (aiInsertError) throw aiInsertError;
-
-      // Update UI with AI message with explicit typing
       const newAiMessage: Message = { role: "assistant", content: aiMessage };
       setMessages(prev => [...prev, newAiMessage]);
     } catch (error) {
@@ -152,24 +67,7 @@ const Index = () => {
         
         <div className="flex-1 overflow-y-auto space-y-4 mb-4">
           {messages.map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex",
-                message.role === "user" ? "justify-end" : "justify-start"
-              )}
-            >
-              <div
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3",
-                  message.role === "user"
-                    ? "bg-black text-white ml-auto"
-                    : "bg-neutral-100"
-                )}
-              >
-                <p className="text-sm sm:text-base">{message.content}</p>
-              </div>
-            </div>
+            <ChatMessage key={index} message={message} />
           ))}
           {isLoading && (
             <div className="flex justify-start">
