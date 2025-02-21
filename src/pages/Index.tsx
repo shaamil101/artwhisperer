@@ -70,8 +70,8 @@ const Index = () => {
     const userMessage = input.trim();
     setInput("");
     
-    // Add user message to UI immediately
-    const newUserMessage = { role: "user", content: userMessage };
+    // Add user message to UI immediately with explicit typing
+    const newUserMessage: Message = { role: "user", content: userMessage };
     setMessages(prev => [...prev, newUserMessage]);
     setIsLoading(true);
 
@@ -123,8 +123,9 @@ const Index = () => {
 
       if (aiInsertError) throw aiInsertError;
 
-      // Update UI with AI message
-      setMessages(prev => [...prev, { role: "assistant", content: aiMessage }]);
+      // Update UI with AI message with explicit typing
+      const newAiMessage: Message = { role: "assistant", content: aiMessage };
+      setMessages(prev => [...prev, newAiMessage]);
     } catch (error) {
       console.error("Detailed error:", error);
       toast({
