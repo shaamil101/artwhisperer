@@ -4,13 +4,18 @@ import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { createClient } from '@supabase/supabase-js';
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const STORAGE_KEY = "art-whisperer-conversations";
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -19,27 +24,36 @@ const Index = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Load conversations from localStorage when component mounts
+  // Load conversations from Supabase when component mounts
   useEffect(() => {
-    const savedMessages = localStorage.getItem(STORAGE_KEY);
-    if (savedMessages) {
+    const loadMessages = async () => {
       try {
-        setMessages(JSON.parse(savedMessages));
+        const { data, error } = await supabase
+          .from('conversations')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (data) {
+          const formattedMessages = data.map(msg => ({
+            role: msg.role as "user" | "assistant",
+            content: msg.content
+          }));
+          setMessages(formattedMessages);
+        }
       } catch (error) {
-        console.error("Error loading saved messages:", error);
+        console.error("Error loading messages:", error);
         toast({
           title: "Error",
-          description: "Failed to load saved conversations",
+          description: "Failed to load conversations",
           variant: "destructive",
         });
       }
-    }
-  }, []);
+    };
 
-  // Save conversations to localStorage whenever messages change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  }, [messages]);
+    loadMessages();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,10 +69,21 @@ const Index = () => {
 
     const userMessage = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    
+    // Add user message to UI immediately
+    const newUserMessage = { role: "user", content: userMessage };
+    setMessages(prev => [...prev, newUserMessage]);
     setIsLoading(true);
 
     try {
+      // Save user message to Supabase
+      const { error: insertError } = await supabase
+        .from('conversations')
+        .insert([{ role: "user", content: userMessage }]);
+
+      if (insertError) throw insertError;
+
+      // Get AI response
       const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
         method: "POST",
         headers: {
@@ -90,7 +115,16 @@ const Index = () => {
       }
 
       const aiMessage = data.choices[0].message.content;
-      setMessages((prev) => [...prev, { role: "assistant", content: aiMessage }]);
+      
+      // Save AI message to Supabase
+      const { error: aiInsertError } = await supabase
+        .from('conversations')
+        .insert([{ role: "assistant", content: aiMessage }]);
+
+      if (aiInsertError) throw aiInsertError;
+
+      // Update UI with AI message
+      setMessages(prev => [...prev, { role: "assistant", content: aiMessage }]);
     } catch (error) {
       console.error("Detailed error:", error);
       toast({
