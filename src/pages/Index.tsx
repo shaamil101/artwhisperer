@@ -10,12 +10,36 @@ interface Message {
   content: string;
 }
 
+const STORAGE_KEY = "art-whisperer-conversations";
+
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load conversations from localStorage when component mounts
+  useEffect(() => {
+    const savedMessages = localStorage.getItem(STORAGE_KEY);
+    if (savedMessages) {
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch (error) {
+        console.error("Error loading saved messages:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load saved conversations",
+          variant: "destructive",
+        });
+      }
+    }
+  }, []);
+
+  // Save conversations to localStorage whenever messages change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
