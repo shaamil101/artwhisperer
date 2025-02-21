@@ -8,10 +8,10 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const getAIResponse = async (userMessage: string) => {
   try {
-    const response = await fetch("https://chat.dartmouth.edu/api/models", {
+    const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer sk-d15355a8cc7b48cc9449a900c9834f00",
+        "Authorization": "sk-d15355a8cc7b48cc9449a900c9834f00",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
