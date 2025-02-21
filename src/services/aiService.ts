@@ -11,11 +11,11 @@ export const getAIResponse = async (userMessage: string) => {
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer sk-d86202fc45e54cb598656e972542e21e",
+        "Authorization": "Bearer sk-d15355a8cc7b48cc9449a900c9834f00",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai.gpt-4o-2024-08-06",
+        model: "google_genai.gemini-2.0-flash-001",
         messages: [{
           role: "user",
           content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concisce and imagine that you're already at the MET with the user so you don't need to mention it. Here's the user's question: " + userMessage
