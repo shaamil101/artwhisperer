@@ -19,7 +19,7 @@ const MAX_ANONYMOUS_MESSAGES = 3;
 
 const INTRO_MESSAGE: Message = {
   role: "assistant",
-  content: "Hi! This is Museo - your personal museum guide. I'm not affiliated with the Metropolitan Museum of Art but I'm familiar with all the art here and I'm happy to answer any questions. Please ask me any questions you might have :) \n\nPlease note: I'm just an AI so I might not be 100% accurate"
+  content: "Hi! This is Museo - your personal museum guide. I'm not affiliated with the Metropolitan Museum of Art but I'm familiar with all the art here and I'm happy to answer any questions! Please ask me any questions you might have:)\n\nPlease note: I'm just an AI so I might not be 100% accurate"
 };
 
 const Index = () => {
