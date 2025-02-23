@@ -68,7 +68,7 @@ export const getAIResponse = async (userMessage: string) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "anthropic.claude-3-5-haiku-20241022",
+        model: "google_genai.gemini-2.0-flash-001",
         messages: [
           {
             role: "system",
@@ -79,6 +79,8 @@ export const getAIResponse = async (userMessage: string) => {
         stream: false
       }),
     });
+    console.log("TEST LOG: Backend is running");
+
 
     console.log("API request sent. Awaiting response...");
 
