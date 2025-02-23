@@ -8,6 +8,11 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const getAIResponse = async (userMessage: string) => {
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      throw new Error("User must be authenticated to chat");
+    }
+
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
       headers: {
@@ -45,11 +50,11 @@ export const getAIResponse = async (userMessage: string) => {
     }
 
     // Save user message to Supabase
-    await saveMessage("user", userMessage);
+    await saveMessage("user", userMessage, session.user.id);
     
     // Save AI response to Supabase
     const aiResponseContent = data.choices[0].message.content;
-    await saveMessage("assistant", aiResponseContent);
+    await saveMessage("assistant", aiResponseContent, session.user.id);
 
     return aiResponseContent;
   } catch (error) {
@@ -58,11 +63,11 @@ export const getAIResponse = async (userMessage: string) => {
   }
 };
 
-export const saveMessage = async (role: "user" | "assistant", content: string) => {
+export const saveMessage = async (role: "user" | "assistant", content: string, userId: string) => {
   try {
     const { error } = await supabase
       .from('conversations')
-      .insert([{ role, content }]);
+      .insert([{ role, content, user_id: userId }]);
 
     if (error) {
       console.error("Error saving message to Supabase:", error);

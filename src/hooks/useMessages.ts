@@ -13,8 +13,31 @@ export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for changes in auth state
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session?.user) {
+      setMessages([]);
+      setIsLoading(false);
+      return;
+    }
+
     const loadMessages = async () => {
       try {
         setIsLoading(true);
@@ -55,11 +78,14 @@ export const useMessages = () => {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'conversations' },
         (payload) => {
-          const newMessage = {
-            role: payload.new.role as "user" | "assistant",
-            content: payload.new.content
-          };
-          setMessages(current => [...current, newMessage]);
+          // Only add messages that belong to the current user
+          if (payload.new.user_id === session.user.id) {
+            const newMessage = {
+              role: payload.new.role as "user" | "assistant",
+              content: payload.new.content
+            };
+            setMessages(current => [...current, newMessage]);
+          }
         }
       )
       .subscribe();
@@ -67,7 +93,7 @@ export const useMessages = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [session, toast]);
 
-  return { messages, setMessages, isLoading };
+  return { messages, setMessages, isLoading, session };
 };
