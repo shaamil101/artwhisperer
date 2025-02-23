@@ -10,13 +10,13 @@ async function getRecentMessages(userId: string) {
   try {
     const { data, error } = await supabase
       .from('conversations')
-      .select('role, content')
+      .select('role, content, created_at') // Added created_at for better sorting
       .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true }) // Changed to ascending to get chronological order
       .limit(4);
 
     if (error) throw error;
-    return data?.reverse() || [];
+    return data || [];
   } catch (error) {
     console.error('Error fetching recent messages:', error);
     return [];
@@ -36,6 +36,13 @@ export const getAIResponse = async (userMessage: string) => {
         content: msg.content
       }));
     }
+
+    // Add current user message to history
+    messageHistory.push({ role: "user", content: userMessage });
+
+    // Log the conversation context for debugging
+    console.log("Sending conversation context:", messageHistory);
+// ... rest of the code remains the same ...
 
     // Add current user message to history
     messageHistory.push({ role: "user", content: userMessage });
