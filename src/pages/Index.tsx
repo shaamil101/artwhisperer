@@ -8,6 +8,7 @@ import { getAIResponse } from "@/services/aiService";
 import { ChatMessage } from "@/components/ChatMessage";
 import { Message } from "@/types/message";
 import { createClient } from '@supabase/supabase-js';
+import { Input } from "@/components/ui/input";
 
 const supabaseUrl = "https://rnzucysbinhnwyozduel.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuenVjeXNiaW5obnd5b3pkdWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNzQxNjIsImV4cCI6MjA1NTc1MDE2Mn0.qBfilqDAdpRInNm84elhp9Z-TvBDHhJejsD1CkRxtIw";
@@ -17,6 +18,9 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const Index = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, setMessages, session } = useMessages();
@@ -56,17 +60,34 @@ const Index = () => {
     }
   };
 
-  const handleSignIn = async () => {
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error signing in:', error);
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast({
+          title: "Success",
+          description: "Check your email to verify your account",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast({
+          title: "Success",
+          description: "Successfully signed in",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to sign in with Google",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -76,11 +97,14 @@ const Index = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-    } catch (error) {
-      console.error('Error signing out:', error);
+      toast({
+        title: "Success",
+        description: "Successfully signed out",
+      });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to sign out",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -107,12 +131,34 @@ const Index = () => {
               Sign Out
             </Button>
           ) : (
-            <Button 
-              onClick={handleSignIn}
-              variant="default"
-            >
-              Sign In with Google
-            </Button>
+            <div className="space-y-4">
+              <form onSubmit={handleAuth} className="space-y-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Button type="submit" className="w-full">
+                  {isSignUp ? "Sign Up" : "Sign In"}
+                </Button>
+              </form>
+              <Button
+                variant="link"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm"
+              >
+                {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+              </Button>
+            </div>
           )}
         </div>
       </div>
