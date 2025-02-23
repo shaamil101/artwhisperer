@@ -22,7 +22,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
             : "bg-neutral-100"
         )}
       >
-        <p className="text-sm sm:text-base">{message.content}</p>
+        <p className="whitespace-pre-wrap">{message.content}</p>
       </div>
     </div>
   );
