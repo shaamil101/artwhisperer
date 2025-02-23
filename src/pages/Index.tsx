@@ -52,8 +52,8 @@ const Index = () => {
     if (!session?.user && anonymousMessageCount >= MAX_ANONYMOUS_MESSAGES) {
       setIsAuthDialogOpen(true);
       toast({
-        title: "Please sign up to keep chatting!",
-        description: "Create an account to continue the conversation.",
+        title: "Sign up/Sign in to keep chatting with Museo",
+        description: "Create an account to continue the conversation and save your chat history.",
       });
       return;
     }
@@ -67,6 +67,14 @@ const Index = () => {
 
     if (!session?.user) {
       setAnonymousMessageCount(prev => prev + 1);
+      
+      // Show a toast when the user has sent their second message
+      if (anonymousMessageCount === 1) {
+        toast({
+          title: "One more message left",
+          description: "Sign up to keep chatting with Museo and save your conversation history!",
+        });
+      }
     }
 
     try {
@@ -183,3 +191,4 @@ const Index = () => {
 };
 
 export default Index;
+

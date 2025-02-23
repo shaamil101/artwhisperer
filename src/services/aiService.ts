@@ -9,9 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const getAIResponse = async (userMessage: string) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      throw new Error("User must be authenticated to chat");
-    }
 
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
@@ -49,14 +46,17 @@ export const getAIResponse = async (userMessage: string) => {
       throw new Error("Invalid response format from API");
     }
 
-    // Save user message to Supabase
-    await saveMessage("user", userMessage, session.user.id);
-    
-    // Save AI response to Supabase
-    const aiResponseContent = data.choices[0].message.content;
-    await saveMessage("assistant", aiResponseContent, session.user.id);
+    // Only save messages to Supabase if user is authenticated
+    if (session?.user) {
+      // Save user message to Supabase
+      await saveMessage("user", userMessage, session.user.id);
+      
+      // Save AI response to Supabase
+      const aiResponseContent = data.choices[0].message.content;
+      await saveMessage("assistant", aiResponseContent, session.user.id);
+    }
 
-    return aiResponseContent;
+    return data.choices[0].message.content;
   } catch (error) {
     console.error("Error in getAIResponse:", error);
     throw error;
@@ -78,3 +78,4 @@ export const saveMessage = async (role: "user" | "assistant", content: string, u
     throw error;
   }
 };
+
