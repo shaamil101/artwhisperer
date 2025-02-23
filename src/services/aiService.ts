@@ -6,9 +6,39 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+async function getRecentMessages(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('role, content')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(4);
+
+    if (error) throw error;
+    return data?.reverse() || [];
+  } catch (error) {
+    console.error('Error fetching recent messages:', error);
+    return [];
+  }
+}
+
 export const getAIResponse = async (userMessage: string) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
+
+    // Prepare conversation history
+    let messageHistory = [];
+    if (session?.user) {
+      const recentMessages = await getRecentMessages(session.user.id);
+      messageHistory = recentMessages.map(msg => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content
+      }));
+    }
+
+    // Add current user message to history
+    messageHistory.push({ role: "user", content: userMessage });
 
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
       method: "POST",
@@ -23,10 +53,7 @@ export const getAIResponse = async (userMessage: string) => {
             role: "system",
             content: "You are an art expert currently at the Metropolitan Museum of Art who helps people understand and appreciate artwork. Please provide informative and engaging responses about art at the MET. Be concise and imagine that you're already at the MET with the user so you don't need to mention it."
           },
-          {
-            role: "user",
-            content: userMessage
-          }
+          ...messageHistory
         ],
         stream: false
       }),
@@ -78,4 +105,3 @@ export const saveMessage = async (role: "user" | "assistant", content: string, u
     throw error;
   }
 };
-
