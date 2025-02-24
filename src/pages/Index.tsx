@@ -147,8 +147,8 @@ const Index = () => {
           </h1>
         </div>
 
-       <div className="absolute right-4 sm:right-6">
-          <button
+        <div className="fixed top-4 right-4 z-50">
+        <button
             onClick={() => setIsMenuOpen(true)}
             className="p-2 text-black hover:bg-neutral-200 rounded-full transition-colors"
           >
