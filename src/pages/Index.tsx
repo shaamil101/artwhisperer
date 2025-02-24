@@ -9,7 +9,6 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Message } from "@/types/message";
 import { createClient } from '@supabase/supabase-js';
 import { AuthDialog } from "@/components/AuthDialog";
-import { Send, Menu, X } from "lucide-react"; 
 
 const supabaseUrl = "https://rnzucysbinhnwyozduel.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuenVjeXNiaW5obnd5b3pkdWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNzQxNjIsImV4cCI6MjA1NTc1MDE2Mn0.qBfilqDAdpRInNm84elhp9Z-TvBDHhJejsD1CkRxtIw";
@@ -31,8 +30,6 @@ const Index = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { messages, setMessages, session } = useMessages();
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
-
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,15 +143,6 @@ const Index = () => {
             Your Personal Museum Guide
           </h1>
         </div>
-
-        <div className="fixed top-4 right-4 z-50">
-        <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-2 text-black hover:bg-neutral-200 rounded-full transition-colors"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-        </div>
       </div>
 
       <div className="flex-1 space-y-4 mb-4">
@@ -197,49 +185,18 @@ const Index = () => {
         </div>
       </form>
 
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black bg-opacity-50"
-          onClick={() => setIsMenuOpen(false)}
+      <div className="mt-4 text-center text-sm text-neutral-500 flex items-center justify-center gap-4">
+        <Button 
+          variant="ghost" 
+          className="text-sm text-neutral-500 hover:text-neutral-800"
+          onClick={() => window.location.href = 'mailto:audioguidemet@gmail.com'}
         >
-          {/* Side Menu Panel */}
-          <div
-            className="absolute top-0 right-0 w-64 h-full bg-white shadow-lg p-4 flex flex-col"
-            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-          >
-            {/* Close Button */}
-            <button
-              className="self-end mb-4 p-2 hover:bg-neutral-200 rounded-full"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            {/* Sign In / Sign Out Logic */}
-            {session?.user ? (
-              <Button onClick={handleSignOut} variant="outline" className="mb-4">
-                Sign Out
-              </Button>
-            ) : (
-              <Button
-                onClick={() => setIsAuthDialogOpen(true)}
-                variant="default"
-                className="mb-4"
-              >
-                Sign In
-              </Button>
-            )}
-
-            {/* Contact Link */}
-            <a
-              href="mailto:audioguidemet@gmail.com"
-              className="text-neutral-700 hover:text-neutral-900 transition-colors mb-2"
-            >
-              Contact
-            </a>
-          </div>
+          Contact
+        </Button>
+        <div className="block sm:hidden">
+          <AuthButton />
         </div>
-      )}
+      </div>
 
       <AuthDialog 
         isOpen={isAuthDialogOpen} 
