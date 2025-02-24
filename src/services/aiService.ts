@@ -59,6 +59,15 @@ export const getAIResponse = async (userMessage: string) => {
     messageHistory.push({ role: "user", content: userMessage });
     console.log("Updated message history after adding user input:", messageHistory);
 
+    const { data: insertData, error } = await supabase
+  .from("user_messages")
+  .insert({ message: userMessage });
+
+if (error) {
+  console.error("Error inserting message into Supabase:", error);
+} else {
+  console.log("Inserted message data:", insertData);
+}
     // Send request to API
     console.log("Sending request to AI API with message history...");
     const response = await fetch("https://chat.dartmouth.edu/api/chat/completions", {
