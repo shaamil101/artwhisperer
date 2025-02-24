@@ -113,8 +113,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div className="text-center mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 relative">
+        <div className="text-center w-full sm:w-auto mb-4 sm:mb-0">
           <span className="px-4 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm font-medium mb-2 inline-block">
             Museo
           </span>
@@ -122,7 +122,7 @@ const Index = () => {
             Your Personal Museum Guide
           </h1>
         </div>
-        <div className="absolute right-4 sm:right-6">
+        <div className="sm:absolute sm:right-0">
           {session?.user ? (
             <Button 
               onClick={handleSignOut}
