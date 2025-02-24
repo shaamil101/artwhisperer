@@ -61,7 +61,7 @@ export const getAIResponse = async (userMessage: string) => {
 
     const { data: insertData, error } = await supabase
   .from("user_messages")
-  .insert({ message: userMessage });
+  .insert({ messages: userMessage });
 
 if (error) {
   console.error("Error inserting message into Supabase:", error);
