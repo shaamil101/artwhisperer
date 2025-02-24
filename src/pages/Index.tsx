@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -68,7 +67,6 @@ const Index = () => {
     if (!session?.user) {
       setAnonymousMessageCount(prev => prev + 1);
       
-      // Show a toast when the user has sent their second message
       if (anonymousMessageCount === 1) {
         toast({
           title: "One more message left",
@@ -111,28 +109,32 @@ const Index = () => {
     }
   };
 
+  const AuthButton = () => (
+    session?.user ? (
+      <Button 
+        onClick={handleSignOut}
+        variant="outline"
+        className="ml-2"
+      >
+        Sign Out
+      </Button>
+    ) : (
+      <Button 
+        onClick={() => setIsAuthDialogOpen(true)}
+        variant="default"
+      >
+        Sign In
+      </Button>
+    )
+  );
+
   return (
     <div className="flex flex-col min-h-screen max-w-4xl mx-auto p-4 sm:p-6">
       <div className="relative mb-8">
-        <div className="absolute right-0 top-0">
-          {session?.user ? (
-            <Button 
-              onClick={handleSignOut}
-              variant="outline"
-              className="ml-2"
-            >
-              Sign Out
-            </Button>
-          ) : (
-            <Button 
-              onClick={() => setIsAuthDialogOpen(true)}
-              variant="default"
-            >
-              Sign In
-            </Button>
-          )}
+        <div className="hidden sm:block absolute right-0 top-0">
+          <AuthButton />
         </div>
-        <div className="text-center pr-24">
+        <div className="text-center sm:pr-24">
           <span className="px-4 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm font-medium mb-2 inline-block">
             Museo
           </span>
@@ -182,10 +184,13 @@ const Index = () => {
         </div>
       </form>
 
-      <div className="mt-4 text-center text-sm text-neutral-500">
+      <div className="mt-4 text-center text-sm text-neutral-500 flex items-center justify-center gap-4">
         <a href="mailto:audioguidemet@gmail.com" className="hover:text-neutral-800 transition-colors">
           Contact
         </a>
+        <div className="block sm:hidden">
+          <AuthButton />
+        </div>
       </div>
 
       <AuthDialog 
