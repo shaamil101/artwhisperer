@@ -71,7 +71,6 @@ const Index = () => {
     if (!session?.user) {
       setAnonymousMessageCount(prev => prev + 1);
       
-      // Show a toast when the user has sent their second message
       if (anonymousMessageCount === 1) {
         toast({
           title: "One more message left",
@@ -114,10 +113,32 @@ const Index = () => {
     }
   };
 
+  const AuthButton = () => (
+    session?.user ? (
+      <Button 
+        onClick={handleSignOut}
+        variant="outline"
+        className="ml-2"
+      >
+        Sign Out
+      </Button>
+    ) : (
+      <Button 
+        onClick={() => setIsAuthDialogOpen(true)}
+        variant="default"
+      >
+        Sign In
+      </Button>
+    )
+  );
+
   return (
     <div className="flex flex-col min-h-screen max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div className="text-center mx-auto">
+      <div className="relative mb-8">
+        <div className="hidden sm:block absolute right-0 top-0">
+          <AuthButton />
+        </div>
+        <div className="text-center sm:pr-24">
           <span className="px-4 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm font-medium mb-2 inline-block">
             Museo
           </span>
