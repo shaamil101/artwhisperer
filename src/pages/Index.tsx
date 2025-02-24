@@ -113,16 +113,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 relative">
-        <div className="text-center w-full sm:w-auto mb-4 sm:mb-0">
-          <span className="px-4 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm font-medium mb-2 inline-block">
-            Museo
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight mt-2">
-            Your Personal Museum Guide
-          </h1>
-        </div>
-        <div className="sm:absolute sm:right-0">
+      <div className="relative mb-8">
+        <div className="absolute right-0 top-0">
           {session?.user ? (
             <Button 
               onClick={handleSignOut}
@@ -139,6 +131,14 @@ const Index = () => {
               Sign In
             </Button>
           )}
+        </div>
+        <div className="text-center pr-24">
+          <span className="px-4 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm font-medium mb-2 inline-block">
+            Museo
+          </span>
+          <h1 className="text-4xl font-bold tracking-tight mt-2">
+            Your Personal Museum Guide
+          </h1>
         </div>
       </div>
 
