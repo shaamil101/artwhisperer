@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -185,9 +186,13 @@ const Index = () => {
       </form>
 
       <div className="mt-4 text-center text-sm text-neutral-500 flex items-center justify-center gap-4">
-        <a href="mailto:audioguidemet@gmail.com" className="hover:text-neutral-800 transition-colors">
+        <Button 
+          variant="ghost" 
+          className="text-sm text-neutral-500 hover:text-neutral-800"
+          onClick={() => window.location.href = 'mailto:audioguidemet@gmail.com'}
+        >
           Contact
-        </a>
+        </Button>
         <div className="block sm:hidden">
           <AuthButton />
         </div>
