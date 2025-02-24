@@ -182,6 +182,12 @@ const Index = () => {
         </div>
       </form>
 
+      <div className="mt-4 text-center text-sm text-neutral-500">
+        <a href="mailto:audioguidemet@gmail.com" className="hover:text-neutral-800 transition-colors">
+          Contact
+        </a>
+      </div>
+
       <AuthDialog 
         isOpen={isAuthDialogOpen} 
         onOpenChange={setIsAuthDialogOpen} 
@@ -191,4 +197,3 @@ const Index = () => {
 };
 
 export default Index;
-
